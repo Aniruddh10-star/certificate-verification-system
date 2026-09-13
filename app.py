@@ -1,11 +1,30 @@
 from flask import Flask, request
 import sqlite3
 import hashlib
+import os
 from blockchain import Blockchain
 import qrcode
 
 app = Flask(__name__)
+os.makedirs("static", exist_ok=True)
 
+connection = sqlite3.connect("certificates.db")
+
+cursor = connection.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS certificates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    certificate_id TEXT UNIQUE,
+    student_name TEXT,
+    degree TEXT,
+    year TEXT,
+    certificate_hash TEXT
+)
+""")
+
+connection.commit()
+connection.close()
 
 # HOME PAGE
 @app.route("/")
