@@ -510,7 +510,9 @@ def add_certificate():
         <a href="/">
             🏠 Back to Home
         </a>
-
+        <a href="/certificate/{certificate_id}">
+       📜 View / Print Certificate
+       </a>
         <a href="/verify">
             🔍 Verify Certificate
         </a>
