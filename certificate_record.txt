@@ -1,0 +1,5 @@
+Certificate ID: 4ge23cs102
+Student Name: Ravi
+Degree: BE
+Year: 2026
+SHA-256 Hash: cbd787bf338777b5f38677d047e1798e54484735c03dce1d3fb17767aeb99c23
