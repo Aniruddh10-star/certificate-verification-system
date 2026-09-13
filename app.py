@@ -393,6 +393,7 @@ def add_certificate():
     except sqlite3.IntegrityError:
 
         message = "❌ Certificate ID already exists!"
+        qr_filename = ""
     connection.close()
 
     return f"""
