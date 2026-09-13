@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS certificates (
 """)
 
 connection.commit()
+connection.commit()
 connection.close()
 
 # HOME PAGE
