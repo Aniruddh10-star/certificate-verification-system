@@ -683,22 +683,23 @@ def add_certificate():
     try:
         placeholder = "%s" if DATABASE_URL else "?"
 
-        cursor.execute(
-            f"""
-            INSERT INTO certificates
-            (certificate_id, student_name, degree, year, certificate_hash)
-            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-            """,
-            (
-                certificate_id,
-                student_name,
-                degree,
-                year,
-                certificate_hash
-            )
-        )
+            connection = get_connection()
+    cursor = connection.cursor()
 
-        connection.commit()
+    placeholder = "%s" if DATABASE_URL else "?"
+
+    cursor.execute(
+        f"""
+        SELECT student_name, degree, year, certificate_hash
+        FROM certificates
+        WHERE certificate_id = {placeholder}
+        """,
+        (certificate_id,)
+    )
+
+    record = cursor.fetchone()
+
+    connection.close()
 
         # Add certificate to blockchain
         blockchain = Blockchain()
