@@ -1663,16 +1663,16 @@ def certificate(certificate_id):
     connection = get_connection()
     cursor = connection.cursor()
 
-placeholder = "%s" if DATABASE_URL else "?"
+    placeholder = "%s" if DATABASE_URL else "?"
 
-cursor.execute(
-    f"""
-    SELECT student_name, degree, year, certificate_hash
-    FROM certificates
-    WHERE certificate_id = {placeholder}
-    """,
-    (certificate_id,)
-)
+    cursor.execute(
+        f"""
+        SELECT student_name, degree, year, certificate_hash
+        FROM certificates
+        WHERE certificate_id = {placeholder}
+        """,
+        (certificate_id,)
+    )
 
     record = cursor.fetchone()
 
@@ -1699,6 +1699,7 @@ cursor.execute(
         <title>Academic Certificate</title>
 
         <style>
+
         button {{
             padding: 12px 25px;
             background-color: #1565c0;
@@ -1728,63 +1729,63 @@ cursor.execute(
             }}
         }}
 
-            body {{
-                font-family: Georgia, serif;
-                background-color: #f2f2f2;
-                margin: 0;
-                padding: 30px;
-            }}
+        body {{
+            font-family: Georgia, serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 30px;
+        }}
 
-            .certificate {{
-                width: 800px;
-                max-width: 90%;
-                margin: auto;
-                padding: 50px;
-                background-color: white;
-                border: 8px solid #1565c0;
-                text-align: center;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            }}
+        .certificate {{
+            width: 800px;
+            max-width: 90%;
+            margin: auto;
+            padding: 50px;
+            background-color: white;
+            border: 8px solid #1565c0;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }}
 
-            h1 {{
-                color: #1565c0;
-                font-size: 36px;
-            }}
+        h1 {{
+            color: #1565c0;
+            font-size: 36px;
+        }}
 
-            h2 {{
-                margin-top: 30px;
-            }}
+        h2 {{
+            margin-top: 30px;
+        }}
 
-            .student {{
-                font-size: 30px;
-                font-weight: bold;
-                margin: 25px;
-            }}
+        .student {{
+            font-size: 30px;
+            font-weight: bold;
+            margin: 25px;
+        }}
 
-            .degree {{
-                font-size: 22px;
-                margin: 20px;
-            }}
+        .degree {{
+            font-size: 22px;
+            margin: 20px;
+        }}
 
-            .details {{
-                margin-top: 30px;
-                font-family: Arial, sans-serif;
-            }}
+        .details {{
+            margin-top: 30px;
+            font-family: Arial, sans-serif;
+        }}
 
-            .qr {{
-                margin-top: 30px;
-            }}
+        .qr {{
+            margin-top: 30px;
+        }}
 
-            .qr img {{
-                width: 160px;
-                height: 160px;
-            }}
+        .qr img {{
+            width: 160px;
+            height: 160px;
+        }}
 
-            .verification {{
-                font-family: Arial, sans-serif;
-                color: #555;
-                margin-top: 10px;
-            }}
+        .verification {{
+            font-family: Arial, sans-serif;
+            color: #555;
+            margin-top: 10px;
+        }}
 
         </style>
 
@@ -1830,12 +1831,16 @@ cursor.execute(
                 </p>
 
             </div>
-<br><br>
 
-<button onclick="window.print()">
-    🖨️ Print Certificate
-</button>                 
+            <br><br>
+
+            <button onclick="window.print()">
+                🖨️ Print Certificate
+            </button>
+
         </div>
+
+    </body>
 
     </html>
     """
