@@ -1662,14 +1662,16 @@ def certificate(certificate_id):
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute(
-        """
-        SELECT student_name, degree, year, certificate_hash
-        FROM certificates
-        WHERE certificate_id = %s
-        """,
-        (certificate_id,)
-    )
+placeholder = "%s" if DATABASE_URL else "?"
+
+cursor.execute(
+    f"""
+    SELECT student_name, degree, year, certificate_hash
+    FROM certificates
+    WHERE certificate_id = {placeholder}
+    """,
+    (certificate_id,)
+)
 
     record = cursor.fetchone()
 
