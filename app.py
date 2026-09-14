@@ -2,41 +2,57 @@ from flask import Flask, request, session, redirect, url_for
 import sqlite3
 import hashlib
 import os
+import psycopg2
 from blockchain import Blockchain
 import qrcode
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+def get_connection():
+    if DATABASE_URL:
+        return psycopg2.connect(DATABASE_URL)
+    else:
+        return sqlite3.connect("certificates.db")
 
 app = Flask(__name__)
 app.secret_key = "certificate_secret_key_2026"
 os.makedirs("static", exist_ok=True)
 
-connection = sqlite3.connect("certificates.db")
+if DATABASE_URL:
+    connection = get_connection()
+    cursor = connection.cursor()
 
-cursor = connection.cursor()
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS certificates (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    certificate_id TEXT UNIQUE,
-    student_name TEXT,
-    degree TEXT,
-    year TEXT,
-    certificate_hash TEXT
-)
-""")
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS certificates (
+        id BIGSERIAL PRIMARY KEY,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        certificate_id TEXT UNIQUE,
+        student_name TEXT,
+        degree TEXT,
+        year TEXT,
+        certificate_hash TEXT
+    )
+    """)
 
-connection.commit()
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS certificates (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    certificate_id TEXT UNIQUE,
-    student_name TEXT,
-    degree TEXT,
-    year TEXT,
-    certificate_hash TEXT
-)
-""")
+    connection.commit()
+    connection.close()
 
-connection.commit()
-connection.close()
+else:
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS certificates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        certificate_id TEXT UNIQUE,
+        student_name TEXT,
+        degree TEXT,
+        year TEXT,
+        certificate_hash TEXT
+    )
+    """)
+
+    connection.commit()
+    connection.close()
 
 # HOME PAGE
 @app.route("/")
@@ -479,7 +495,7 @@ def registered_certificates():
     if not session.get("admin_logged_in"):
         return redirect("/admin")
 
-    connection = sqlite3.connect("certificates.db")
+    connection = get_connection()
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -602,12 +618,12 @@ def delete_certificate(certificate_id):
     if not session.get("admin_logged_in"):
         return redirect("/certificates")
 
-    connection = sqlite3.connect("certificates.db")
+    connection = get_connection()
     cursor = connection.cursor()
 
     # Delete certificate from database
     cursor.execute(
-        "DELETE FROM certificates WHERE certificate_id = ?",
+        "DELETE FROM certificates WHERE certificate_id = %s",
         (certificate_id,)
     )
 
@@ -661,7 +677,7 @@ def add_certificate():
         certificate_data.encode()
     ).hexdigest()
 
-    connection = sqlite3.connect("certificates.db")
+    connection = get_connection()
     cursor = connection.cursor()
 
     try:
@@ -670,7 +686,7 @@ def add_certificate():
             """
             INSERT INTO certificates
             (certificate_id, student_name, degree, year, certificate_hash)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
             """,
             (
                 certificate_id,
@@ -706,7 +722,7 @@ def add_certificate():
 
         qr.save(qr_filename)
 
-    except sqlite3.IntegrityError:
+    except (sqlite3.IntegrityError, psycopg2.IntegrityError):
 
         message = "❌ Certificate ID already exists!"
         qr_filename = ""
@@ -1023,14 +1039,14 @@ def verify():
         certificate_data.encode()
     ).hexdigest()
 
-    connection = sqlite3.connect("certificates.db")
+    connection = get_connection()
     cursor = connection.cursor()
 
     cursor.execute(
         """
         SELECT certificate_hash
         FROM certificates
-        WHERE certificate_id = ?
+        WHERE certificate_id = %s
         """,
         (certificate_id,)
     )
@@ -1261,14 +1277,14 @@ def verify():
 @app.route("/verify/<certificate_id>")
 def verify_qr(certificate_id):
 
-    connection = sqlite3.connect("certificates.db")
+    connection = get_connection()
     cursor = connection.cursor()
 
     cursor.execute(
         """
         SELECT student_name, degree, year, certificate_hash
         FROM certificates
-        WHERE certificate_id = ?
+        WHERE certificate_id = %s
         """,
         (certificate_id,)
     )
@@ -1642,14 +1658,14 @@ def verify_qr(certificate_id):
 @app.route("/certificate/<certificate_id>")
 def certificate(certificate_id):
 
-    connection = sqlite3.connect("certificates.db")
+    connection = get_connection()
     cursor = connection.cursor()
 
     cursor.execute(
         """
         SELECT student_name, degree, year, certificate_hash
         FROM certificates
-        WHERE certificate_id = ?
+        WHERE certificate_id = %s
         """,
         (certificate_id,)
     )
