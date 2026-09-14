@@ -682,20 +682,22 @@ def add_certificate():
 
     try:
 
-        cursor.execute(
-            """
-            INSERT INTO certificates
-            (certificate_id, student_name, degree, year, certificate_hash)
-            VALUES (%s, %s, %s, %s, %s)
-            """,
-            (
-                certificate_id,
-                student_name,
-                degree,
-                year,
-                certificate_hash
-            )
-        )
+        placeholder = "%s" if DATABASE_URL else "?"
+
+cursor.execute(
+    f"""
+    INSERT INTO certificates
+    (certificate_id, student_name, degree, year, certificate_hash)
+    VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+    """,
+    (
+        certificate_id,
+        student_name,
+        degree,
+        year,
+        certificate_hash
+    )
+)
 
         connection.commit()
 
