@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, session, redirect, url_for
 import sqlite3
 import hashlib
 import os
@@ -6,12 +6,12 @@ from blockchain import Blockchain
 import qrcode
 
 app = Flask(__name__)
+app.secret_key = "certificate_secret_key_2026"
 os.makedirs("static", exist_ok=True)
 
 connection = sqlite3.connect("certificates.db")
 
 cursor = connection.cursor()
-
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS certificates (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,6 +24,17 @@ CREATE TABLE IF NOT EXISTS certificates (
 """)
 
 connection.commit()
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS certificates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    certificate_id TEXT UNIQUE,
+    student_name TEXT,
+    degree TEXT,
+    year TEXT,
+    certificate_hash TEXT
+)
+""")
+
 connection.commit()
 connection.close()
 
@@ -155,6 +166,8 @@ def home():
 # REGISTER CERTIFICATE PAGE
 @app.route("/add")
 def add_certificate_page():
+    if not session.get("admin_logged_in"):
+        return redirect("/admin")
     return """
     <!DOCTYPE html>
     <html>
@@ -307,7 +320,11 @@ def add_certificate_page():
                 </button>
 
             </form>
+<br><br>
 
+<a href="/certificates">
+    📋 View Registered Certificates
+</a>
             <div class="security">
                 🔒 Certificate data is protected using
                 SHA-256 hashing and blockchain verification.
@@ -324,11 +341,310 @@ def add_certificate_page():
     </html>
     """
 
+# ADMIN LOGIN
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        if username == "admin" and password == "admin123":
+            session["admin_logged_in"] = True
+            return redirect("/add")
+
+        return """
+        <h2>Invalid username or password</h2>
+        <a href="/admin">Try Again</a>
+        """
+
+    return """
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Login</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-box {
+            background: white;
+            width: 360px;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 25px;
+            background: #1f4e79;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #163a5c;
+        }
+
+        .security {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-box">
+
+        <h1>🔐 University Admin Login</h1>
+
+        <form method="POST">
+
+            <label>Username</label>
+            <input type="text"
+                   name="username"
+                   placeholder="Enter admin username"
+                   required>
+
+            <label>Password</label>
+            <input type="password"
+                   name="password"
+                   placeholder="Enter admin password"
+                   required>
+
+            <button type="submit">
+                Login
+            </button>
+
+        </form>
+
+        <div class="security">
+            🔒 Authorized administrators only
+        </div>
+
+    </div>
+
+</body>
+
+</html>
+"""
+# ADMIN LOGOUT
+
+@app.route("/logout")
+def logout():
+    session.pop("admin_logged_in", None)
+    return redirect("/admin")
+# REGISTERED CERTIFICATES
+
+@app.route("/certificates")
+def registered_certificates():
+
+    if not session.get("admin_logged_in"):
+        return redirect("/admin")
+
+    connection = sqlite3.connect("certificates.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT certificate_id, student_name, degree, year
+        FROM certificates
+        ORDER BY id DESC
+    """)
+
+    records = cursor.fetchall()
+    connection.close()
+
+    html = """
+    <!DOCTYPE html>
+    <html>
+
+    <head>
+        <title>Registered Certificates</title>
+
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f4f6f8;
+                padding: 30px;
+            }
+
+            .container {
+                max-width: 1000px;
+                margin: auto;
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+            }
+
+            h1 {
+                text-align: center;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 25px;
+            }
+
+            th, td {
+                padding: 12px;
+                border-bottom: 1px solid #ddd;
+                text-align: left;
+            }
+
+            th {
+                background: #1f4e79;
+                color: white;
+            }
+
+            .delete {
+                color: white;
+                background: #c62828;
+                padding: 7px 12px;
+                text-decoration: none;
+                border-radius: 5px;
+            }
+
+            .back {
+                display: inline-block;
+                margin-top: 20px;
+                text-decoration: none;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <div class="container">
+
+            <h1>📋 Registered Certificates</h1>
+    """
+
+    for record in records:
+
+        html += f"""
+            <p>
+                <b>Certificate ID:</b> {record[0]}<br>
+                <b>Student:</b> {record[1]}<br>
+                <b>Degree:</b> {record[2]}<br>
+                <b>Year:</b> {record[3]}<br><br>
+
+                <a class="delete"
+                   href="/delete/{record[0]}"
+                   onclick="return confirm('Delete this certificate?');">
+                   🗑️ Delete
+                </a>
+            </p>
+
+            <hr>
+        """
+
+    html += """
+            <a class="back" href="/add">
+                ← Back to Registration
+            </a>
+<br><br>
+
+<a href="/logout">
+    🚪 Admin Logout
+</a>
+        </div>
+
+    </body>
+
+    </html>
+    """
+
+    return html
+# DELETE CERTIFICATE
+
+@app.route("/delete/<certificate_id>")
+def delete_certificate(certificate_id):
+
+    if not session.get("admin_logged_in"):
+        return redirect("/certificates")
+
+    connection = sqlite3.connect("certificates.db")
+    cursor = connection.cursor()
+
+    # Delete certificate from database
+    cursor.execute(
+        "DELETE FROM certificates WHERE certificate_id = ?",
+        (certificate_id,)
+    )
+
+    connection.commit()
+
+    # Get all remaining certificates
+    cursor.execute(
+        "SELECT certificate_id, certificate_hash FROM certificates"
+    )
+
+    records = cursor.fetchall()
+    connection.close()
+
+    # Rebuild blockchain using remaining certificates
+    blockchain = Blockchain()
+    blockchain.chain = []
+
+    for record in records:
+        blockchain.add_block(
+            record[0] + " | " + record[1]
+        )
+
+    blockchain.save_to_file()
+
+    # Delete old QR code if it exists
+    qr_file = "static/qr_" + certificate_id + ".png"
+
+    if os.path.exists(qr_file):
+        os.remove(qr_file)
+
+    return redirect("/certificates")
 
 # SAVE CERTIFICATE
 @app.route("/add", methods=["POST"])
 def add_certificate():
-
+    if not session.get("admin_logged_in"):
+        return redirect("/admin")
     certificate_id = request.form["certificate_id"]
     student_name = request.form["student_name"]
     degree = request.form["degree"]
@@ -511,8 +827,8 @@ def add_certificate():
             🏠 Back to Home
         </a>
         <a href="/certificate/{certificate_id}">
-       📜 View / Print Certificate
-       </a>
+        📜 View / Print Certificate
+        </a>
         <a href="/verify">
             🔍 Verify Certificate
         </a>
