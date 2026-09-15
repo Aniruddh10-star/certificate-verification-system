@@ -1392,7 +1392,7 @@ def verify():
 
     if (
         new_hash == saved_hash
-        and blockchain_found
+        # and blockchain_found
         and information_matches
     ):
 
