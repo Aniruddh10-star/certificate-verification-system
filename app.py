@@ -703,11 +703,131 @@ def add_certificate():
         connection.commit()
 
     except (sqlite3.IntegrityError, psycopg2.IntegrityError):
-        connection.close()
-        return """
-        <h2>❌ Certificate ID already exists.</h2>
-        <a href="/add">Go Back</a>
-        """
+    connection.close()
+
+    return """
+    <!DOCTYPE html>
+    <html>
+
+    <head>
+
+        <title>Certificate Already Exists</title>
+
+        <style>
+
+            body {
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #ffebee, #f5f7fa);
+                margin: 0;
+                padding: 0;
+            }
+
+            .header {
+                background-color: #c62828;
+                color: white;
+                padding: 25px;
+                text-align: center;
+            }
+
+            .container {
+                width: 500px;
+                max-width: 90%;
+                margin: 70px auto;
+                background: white;
+                padding: 40px;
+                border-radius: 15px;
+                text-align: center;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            }
+
+            .icon {
+                font-size: 60px;
+                margin-bottom: 15px;
+            }
+
+            h1 {
+                color: #c62828;
+                margin-bottom: 15px;
+            }
+
+            .message {
+                color: #555;
+                font-size: 16px;
+                line-height: 1.6;
+            }
+
+            .warning {
+                margin-top: 25px;
+                padding: 15px;
+                background: #ffebee;
+                color: #c62828;
+                border-radius: 8px;
+                font-weight: bold;
+            }
+
+            .button {
+                display: inline-block;
+                margin-top: 30px;
+                padding: 13px 25px;
+                background: #1565c0;
+                color: white;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: bold;
+            }
+
+            .button:hover {
+                background: #0d47a1;
+            }
+
+            .home {
+                display: block;
+                margin-top: 20px;
+                color: #1565c0;
+                text-decoration: none;
+            }
+
+        </style>
+
+    </head>
+
+    <body>
+
+        <div class="header">
+            <h2>🎓 Certificate Verification System</h2>
+        </div>
+
+        <div class="container">
+
+            <div class="icon">
+                ⚠️
+            </div>
+
+            <h1>Certificate ID Already Exists</h1>
+
+            <p class="message">
+                This Certificate ID is already registered
+                in the system.
+            </p>
+
+            <div class="warning">
+                🔐 Each Certificate ID can only be registered once.
+            </div>
+
+            <a class="button" href="/add">
+                🔄 Try Another Certificate
+            </a>
+
+            <a class="home" href="/">
+                🏠 Back to Home
+            </a>
+
+        </div>
+
+    </body>
+
+    </html>
+    """
 
     connection.close()
 
