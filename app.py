@@ -657,10 +657,12 @@ def delete_certificate(certificate_id):
     return redirect("/certificates")
 
 # SAVE CERTIFICATE
+# SAVE CERTIFICATE
 @app.route("/add", methods=["POST"])
 def add_certificate():
     if not session.get("admin_logged_in"):
         return redirect("/admin")
+
     certificate_id = request.form["certificate_id"]
     student_name = request.form["student_name"]
     degree = request.form["degree"]
@@ -683,180 +685,80 @@ def add_certificate():
     try:
         placeholder = "%s" if DATABASE_URL else "?"
 
-            connection = get_connection()
-    cursor = connection.cursor()
-
-    placeholder = "%s" if DATABASE_URL else "?"
-
-    cursor.execute(
-        f"""
-        SELECT student_name, degree, year, certificate_hash
-        FROM certificates
-        WHERE certificate_id = {placeholder}
-        """,
-        (certificate_id,)
-    )
-
-    record = cursor.fetchone()
-
-    connection.close()
-
-        # Add certificate to blockchain
-        blockchain = Blockchain()
-
-        blockchain.add_block(
-            certificate_id + " | " + certificate_hash
+        cursor.execute(
+            f"""
+            INSERT INTO certificates
+            (certificate_id, student_name, degree, year, certificate_hash)
+            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+            """,
+            (
+                certificate_id,
+                student_name,
+                degree,
+                year,
+                certificate_hash
+            )
         )
 
-        blockchain.save_to_file()
-
-        message = "✅ Certificate registered successfully!"
-        blockchain.save_to_file()
-
-        message = "✅ Certificate registered successfully!"
-
-        # Generate QR code
-        qr_data = request.host_url + "verify/" + certificate_id
-
-        qr = qrcode.make(qr_data)
-
-        qr_filename = "static/qr_" + certificate_id + ".png"
-
-        qr.save(qr_filename)
+        connection.commit()
 
     except (sqlite3.IntegrityError, psycopg2.IntegrityError):
+        connection.close()
+        return """
+        <h2>❌ Certificate ID already exists.</h2>
+        <a href="/add">Go Back</a>
+        """
 
-        message = "❌ Certificate ID already exists!"
-        qr_filename = ""
     connection.close()
 
+    # Add certificate to blockchain
+    blockchain = Blockchain()
+
+    blockchain.add_block(
+        certificate_id + " | " + certificate_hash
+    )
+
+    blockchain.save_to_file()
+
+    message = "✅ Certificate registered successfully!"
+
+    qr_data = request.url_root + "verify"
+
+    qr = qrcode.make(qr_data)
+
+    qr_filename = "qr_" + certificate_id + ".png"
+
+    qr.save(
+        os.path.join(
+            "static",
+            qr_filename
+        )
+    )
+
     return f"""
-<!DOCTYPE html>
-<html>
+    <h2>{message}</h2>
 
-<head>
+    <p>Certificate ID: {certificate_id}</p>
+    <p>Student Name: {student_name}</p>
+    <p>Degree: {degree}</p>
+    <p>Year: {year}</p>
+    <p>Certificate Hash:</p>
+    <p>{certificate_hash}</p>
 
-    <title>Certificate Registered</title>
+    <br>
 
-    <style>
+    <img src="/static/{qr_filename}" width="200">
 
-        body {{
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #e3f2fd, #f5f7fa);
-            margin: 0;
-            padding: 0;
-        }}
+    <br><br>
 
-        .header {{
-            background-color: #1565c0;
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }}
+    <a href="/certificate/{certificate_id}">
+        🖨️ Print Certificate
+    </a>
 
-        .container {{
-            width: 600px;
-            max-width: 90%;
-            margin: 45px auto;
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }}
+    <br><br>
 
-        .success {{
-            color: #2e7d32;
-            font-size: 26px;
-            font-weight: bold;
-        }}
-
-        .details {{
-            margin-top: 25px;
-            padding: 20px;
-            background-color: #f5f5f5;
-            border-radius: 10px;
-            text-align: left;
-        }}
-
-        .qr {{
-            margin-top: 25px;
-        }}
-
-        .qr img {{
-            width: 220px;
-            height: 220px;
-        }}
-
-        .instruction {{
-            color: #555;
-            margin-top: 15px;
-        }}
-
-        a {{
-            display: block;
-            margin-top: 25px;
-            text-decoration: none;
-            color: #1565c0;
-        }}
-
-    </style>
-
-</head>
-
-<body>
-
-    <div class="header">
-        <h2>🎓 Certificate Verification System</h2>
-        <p>Blockchain-Based Anti-Forgery Platform</p>
-    </div>
-
-    <div class="container">
-
-        <div class="success">
-            {message}
-        </div>
-
-        <div class="details">
-
-            <p>
-                <b>Certificate ID:</b> {certificate_id}
-            </p>
-
-            <p>
-                <b>Hash:</b> {certificate_hash}
-            </p>
-
-        </div>
-
-        <div class="qr">
-
-            <h2>📱 Certificate QR Code</h2>
-
-            <img src="/static/{qr_filename.split('/')[-1]}">
-
-            <p class="instruction">
-                Scan this QR code to verify the certificate.
-            </p>
-
-        </div>
-
-        <a href="/">
-            🏠 Back to Home
-        </a>
-        <a href="/certificate/{certificate_id}">
-        📜 View / Print Certificate
-        </a>
-        <a href="/verify">
-            🔍 Verify Certificate
-        </a>
-
-    </div>
-
-</body>
-
-</html>
-"""
+    <a href="/add">Register Another Certificate</a>
+    """
 
 
 # VERIFY CERTIFICATE PAGE
