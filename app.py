@@ -699,10 +699,8 @@ def add_certificate():
                 certificate_hash
             )
         )
-
-        connection.commit()
-
-    except (sqlite3.IntegrityError, psycopg2.IntegrityError):
+connection.commit()
+except (sqlite3.IntegrityError, psycopg2.IntegrityError):
     connection.close()
 
     return """
