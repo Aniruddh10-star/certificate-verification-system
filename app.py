@@ -681,11 +681,10 @@ def add_certificate():
 
     connection = get_connection()
     cursor = connection.cursor()
+        try:
+            placeholder = "%s" if DATABASE_URL else "?"
 
-    try:
-        placeholder = "%s" if DATABASE_URL else "?"
-
-        cursor.execute(
+            cursor.execute(
             f"""
             INSERT INTO certificates
             (certificate_id, student_name, degree, year, certificate_hash)
