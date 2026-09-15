@@ -679,7 +679,7 @@ def add_certificate():
         certificate_data.encode()
     ).hexdigest()
 
-        connection = get_connection()
+    connection = get_connection()
     cursor = connection.cursor()
 
     try:
