@@ -679,8 +679,9 @@ def add_certificate():
         certificate_data.encode()
     ).hexdigest()
 
-    connection = get_connection()
+        connection = get_connection()
     cursor = connection.cursor()
+
     try:
         placeholder = "%s" if DATABASE_URL else "?"
 
@@ -701,7 +702,7 @@ def add_certificate():
 
         connection.commit()
 
-        except (sqlite3.IntegrityError, psycopg2.IntegrityError):
+    except (sqlite3.IntegrityError, psycopg2.IntegrityError):
         connection.close()
 
         return """
@@ -719,17 +720,10 @@ def add_certificate():
                     padding: 0;
                 }
 
-                .header {
-                    background-color: #c62828;
-                    color: white;
-                    padding: 25px;
-                    text-align: center;
-                }
-
                 .container {
                     width: 600px;
                     max-width: 90%;
-                    margin: 70px auto;
+                    margin: 80px auto;
                     background: white;
                     padding: 40px;
                     border-radius: 15px;
@@ -739,15 +733,13 @@ def add_certificate():
 
                 .icon {
                     font-size: 60px;
-                    margin-bottom: 15px;
                 }
 
                 h1 {
                     color: #c62828;
-                    margin-bottom: 15px;
                 }
 
-                .message {
+                p {
                     color: #555;
                     font-size: 18px;
                     line-height: 1.6;
@@ -756,7 +748,7 @@ def add_certificate():
                 .warning {
                     margin: 25px 0;
                     padding: 18px;
-                    background-color: #fff3cd;
+                    background: #fff3cd;
                     border: 1px solid #ffc107;
                     border-radius: 10px;
                     color: #856404;
@@ -765,16 +757,11 @@ def add_certificate():
                 .button {
                     display: inline-block;
                     padding: 14px 25px;
-                    background-color: #1565c0;
+                    background: #1565c0;
                     color: white;
                     text-decoration: none;
                     border-radius: 8px;
-                    font-size: 16px;
                     margin-top: 10px;
-                }
-
-                .button:hover {
-                    background-color: #0d47a1;
                 }
 
                 .home {
@@ -789,17 +776,13 @@ def add_certificate():
 
         <body>
 
-            <div class="header">
-                <h2>🎓 Certificate Verification System</h2>
-            </div>
-
             <div class="container">
 
                 <div class="icon">⚠️</div>
 
                 <h1>Certificate ID Already Exists</h1>
 
-                <p class="message">
+                <p>
                     This Certificate ID is already registered
                     in the system.
                 </p>
