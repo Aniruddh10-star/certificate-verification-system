@@ -1054,6 +1054,7 @@ def add_certificate():
 
 
 # VERIFY CERTIFICATE PAGE
+# VERIFY CERTIFICATE PAGE
 @app.route("/verify", methods=["GET", "POST"])
 def verify():
 
@@ -1242,12 +1243,17 @@ def verify():
 
     cursor.execute(
         f"""
-        SELECT certificate_id, student_name, degree, year, certificate_hash
+        SELECT certificate_id,
+               student_name,
+               degree,
+               year,
+               certificate_hash
         FROM certificates
         WHERE certificate_id = {placeholder}
         """,
         (certificate_id,)
     )
+
     record = cursor.fetchone()
 
     connection.close()
@@ -1259,8 +1265,14 @@ def verify():
         <a href="/verify">Try Again</a>
         """
 
-    saved_hash = record[0]
+    # Correct database field positions
+    saved_certificate_id = record[0]
+    saved_student_name = record[1]
+    saved_degree = record[2]
+    saved_year = record[3]
+    saved_hash = record[4]
 
+    # Check blockchain
     blockchain = Blockchain()
 
     blockchain_found = False
@@ -1268,16 +1280,30 @@ def verify():
     for block in blockchain.chain:
 
         if block.data == certificate_id + " | " + saved_hash:
+
             blockchain_found = True
             break
 
-    if new_hash == saved_hash and blockchain_found:
+    # Verify all information
+    information_matches = (
+        certificate_id == saved_certificate_id
+        and student_name == saved_student_name
+        and degree == saved_degree
+        and year == saved_year
+    )
+
+    if (
+        new_hash == saved_hash
+        and blockchain_found
+        and information_matches
+    ):
 
         return f"""
         <!DOCTYPE html>
         <html>
 
         <head>
+
             <title>Certificate Verified</title>
 
             <style>
@@ -1347,19 +1373,19 @@ def verify():
                     <h2>🎓 Certificate Details</h2>
 
                     <p>
-                        <b>Certificate ID:</b> {certificate_id}
+                        <b>Certificate ID:</b> {saved_certificate_id}
                     </p>
 
                     <p>
-                        <b>Student Name:</b> {student_name}
+                        <b>Student Name:</b> {saved_student_name}
                     </p>
 
                     <p>
-                        <b>Degree:</b> {degree}
+                        <b>Degree:</b> {saved_degree}
                     </p>
 
                     <p>
-                        <b>Graduation Year:</b> {year}
+                        <b>Graduation Year:</b> {saved_year}
                     </p>
 
                 </div>
