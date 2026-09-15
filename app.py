@@ -736,28 +736,320 @@ def add_certificate():
     )
 
     return f"""
-    <h2>{message}</h2>
+    <!DOCTYPE html>
+    <html>
 
-    <p>Certificate ID: {certificate_id}</p>
-    <p>Student Name: {student_name}</p>
-    <p>Degree: {degree}</p>
-    <p>Year: {year}</p>
-    <p>Certificate Hash:</p>
-    <p>{certificate_hash}</p>
+    <head>
+        <title>Certificate Registered</title>
 
-    <br>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <img src="/static/{qr_filename}" width="200">
+        <style>
 
-    <br><br>
+            * {{
+                box-sizing: border-box;
+            }}
 
-    <a href="/certificate/{certificate_id}">
-        🖨️ Print Certificate
-    </a>
+            body {{
+                margin: 0;
+                padding: 30px 15px;
+                font-family: Arial, sans-serif;
+                background: #f4f7fb;
+                color: #222;
+            }}
 
-    <br><br>
+            .container {{
+                max-width: 850px;
+                margin: auto;
+            }}
 
-    <a href="/add">Register Another Certificate</a>
+            .header {{
+                background: #1565c0;
+                color: white;
+                padding: 25px;
+                border-radius: 15px 15px 0 0;
+                text-align: center;
+            }}
+
+            .header h1 {{
+                margin: 0;
+                font-size: 30px;
+            }}
+
+            .header p {{
+                margin: 8px 0 0;
+                opacity: 0.9;
+            }}
+
+            .card {{
+                background: white;
+                padding: 35px;
+                border-radius: 0 0 15px 15px;
+                box-shadow: 0 5px 25px rgba(0,0,0,0.12);
+            }}
+
+            .success {{
+                text-align: center;
+                margin-bottom: 30px;
+            }}
+
+            .success-icon {{
+                font-size: 55px;
+            }}
+
+            .success h2 {{
+                color: #2e7d32;
+                margin: 10px 0;
+            }}
+
+            .success p {{
+                color: #666;
+            }}
+
+            .details {{
+                background: #f7f9fc;
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 25px;
+            }}
+
+            .row {{
+                display: flex;
+                justify-content: space-between;
+                padding: 12px 0;
+                border-bottom: 1px solid #ddd;
+                gap: 20px;
+            }}
+
+            .row:last-child {{
+                border-bottom: none;
+            }}
+
+            .label {{
+                font-weight: bold;
+                color: #555;
+            }}
+
+            .value {{
+                text-align: right;
+                font-weight: 500;
+            }}
+
+            .hash-box {{
+                background: #263238;
+                color: #fff;
+                padding: 15px;
+                border-radius: 8px;
+                word-break: break-all;
+                font-family: monospace;
+                font-size: 13px;
+                margin-top: 8px;
+            }}
+
+            .qr-section {{
+                text-align: center;
+                margin: 30px 0;
+                padding: 25px;
+                background: #fafafa;
+                border-radius: 12px;
+                border: 1px solid #eee;
+            }}
+
+            .qr-section h3 {{
+                margin-top: 0;
+                color: #1565c0;
+            }}
+
+            .qr-section img {{
+                width: 190px;
+                height: 190px;
+                margin: 15px;
+            }}
+
+            .qr-section p {{
+                color: #666;
+            }}
+
+            .buttons {{
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-top: 30px;
+            }}
+
+            .button {{
+                display: inline-block;
+                padding: 13px 22px;
+                border-radius: 8px;
+                text-decoration: none;
+                color: white;
+                font-weight: bold;
+                border: none;
+                cursor: pointer;
+                font-size: 15px;
+            }}
+
+            .print {{
+                background: #1565c0;
+            }}
+
+            .verify {{
+                background: #2e7d32;
+            }}
+
+            .home {{
+                background: #546e7a;
+            }}
+
+            .button:hover {{
+                opacity: 0.9;
+            }}
+
+            .footer {{
+                text-align: center;
+                color: #777;
+                font-size: 13px;
+                margin-top: 25px;
+            }}
+
+            @media (max-width: 600px) {{
+
+                body {{
+                    padding: 15px 8px;
+                }}
+
+                .card {{
+                    padding: 20px 15px;
+                }}
+
+                .header h1 {{
+                    font-size: 24px;
+                }}
+
+                .row {{
+                    flex-direction: column;
+                    gap: 5px;
+                }}
+
+                .value {{
+                    text-align: left;
+                }}
+
+                .buttons {{
+                    flex-direction: column;
+                }}
+
+                .button {{
+                    width: 100%;
+                    text-align: center;
+                }}
+
+                .qr-section img {{
+                    width: 160px;
+                    height: 160px;
+                }}
+            }}
+
+        </style>
+    </head>
+
+    <body>
+
+        <div class="container">
+
+            <div class="header">
+                <h1>🎓 Certificate Verification System</h1>
+                <p>Blockchain-Based Academic Certificate Authentication</p>
+            </div>
+
+            <div class="card">
+
+                <div class="success">
+                    <div class="success-icon">✅</div>
+
+                    <h2>Certificate Registered Successfully!</h2>
+
+                    <p>
+                        The academic certificate has been securely registered
+                        in the verification system.
+                    </p>
+                </div>
+
+                <div class="details">
+
+                    <div class="row">
+                        <span class="label">Certificate ID</span>
+                        <span class="value">{certificate_id}</span>
+                    </div>
+
+                    <div class="row">
+                        <span class="label">Student Name</span>
+                        <span class="value">{student_name}</span>
+                    </div>
+
+                    <div class="row">
+                        <span class="label">Degree</span>
+                        <span class="value">{degree}</span>
+                    </div>
+
+                    <div class="row">
+                        <span class="label">Graduation Year</span>
+                        <span class="value">{year}</span>
+                    </div>
+
+                </div>
+
+                <h3>🔐 Certificate SHA-256 Hash</h3>
+
+                <div class="hash-box">
+                    {certificate_hash}
+                </div>
+
+                <div class="qr-section">
+
+                    <h3>📱 Certificate Verification QR Code</h3>
+
+                    <img src="/static/{qr_filename}">
+
+                    <p>
+                        Scan this QR code to verify the certificate
+                        through the online verification system.
+                    </p>
+
+                </div>
+
+                <div class="buttons">
+
+                    <a class="button print"
+                       href="/certificate/{certificate_id}">
+                        🖨️ Print Certificate
+                    </a>
+
+                    <a class="button verify"
+                       href="/verify">
+                        🔍 Verify Certificate
+                    </a>
+
+                    <a class="button home"
+                       href="/">
+                        🏠 Home
+                    </a>
+
+                </div>
+
+                <div class="footer">
+                    Blockchain-Based Anti-Forgery Academic Certificate
+                    Verification System
+                </div>
+
+            </div>
+
+        </div>
+
+    </body>
+
+    </html>
     """
 
 
