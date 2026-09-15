@@ -1044,15 +1044,16 @@ def verify():
     connection = get_connection()
     cursor = connection.cursor()
 
+    placeholder = "%s" if DATABASE_URL else "?"
+
     cursor.execute(
-        """
-        SELECT certificate_hash
+        f"""
+        SELECT certificate_id, student_name, degree, year, certificate_hash
         FROM certificates
-        WHERE certificate_id = %s
+        WHERE certificate_id = {placeholder}
         """,
         (certificate_id,)
     )
-
     record = cursor.fetchone()
 
     connection.close()
